@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Media Frame - Images & Audio Alarms</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            max-width: 1000px;
+            width: 100%;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2em;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 0.9em;
+        }
+
+        .tabs {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+            gap: 10px;
+        }
+
+        .tab-btn {
+            background: #e0e0e0;
+            color: #666;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .upload-section {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            display: inline-block;
+            margin-right: 10px;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .upload-btn, .save-btn, .load-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 40px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: inline-block;
+            border: none;
+            margin: 5px;
+        }
+
+        .save-btn {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        }
+
+        .load-btn {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .upload-btn:hover, .save-btn:hover, .load-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .save-btn:disabled, .load-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .image-frame {
+            width: 100%;
+            height: 500px;
+            border: 3px solid #e0e0e0;
+            border-radius: 15px;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #f5f5f5;
+            position: relative;
+        }
+
+        .image-frame img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            display: none;
+        }
+
+        .image-frame.has-image img {
+            display: block;
+        }
+
+        .audio-frame {
+            width: 100%;
+            padding: 40px;
+            border: 3px solid #e0e0e0;
+            border-radius: 15px;
+            background: #f5f5f5;
+            text-align: center;
+        }
+
+        .audio-player {
+            width: 100%;
+            max-width: 500px;
+            margin: 20px auto;
+            display: none;
+        }
+
+        .audio-frame.has-audio .audio-player {
+            display: block;
+        }
+
+        .audio-info {
+            margin-top: 20px;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            display: none;
+        }
+
+        .audio-frame.has-audio .audio-info {
+            display: block;
+        }
+
+        .placeholder {
+            color: #999;
+            font-size: 18px;
+            text-align: center;
+        }
+
+        .image-frame.has-image .placeholder,
+        .audio-frame.has-audio .placeholder {
+            display: none;
+        }
+
+        .controls {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .control-btn {
+            background: #f44336;
+            color: white;
+            border: none;
+            padding: 10px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: background 0.3s;
+            margin: 5px;
+        }
+
+        .control-btn:hover {
+            background: #d32f2f;
+        }
+
+        .test-alarm-btn {
+            background: #ff9800;
+            margin-top: 10px;
+        }
+
+        .test-alarm-btn:hover {
+            background: #f57c00;
+        }
+
+        .file-name {
+            margin-top: 15px;
+            color: #666;
+            font-size: 14px;
+            text-align: center;
+        }
+
+        .status-message {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 10px;
+            text-align: center;
+            display: none;
+        }
+
+        .status-message.success {
+            background: #d4edda;
+            color: #155724;
+            display: block;
+        }
+
+        .status-message.error {
+            background: #f8d7da;
+            color: #721c24;
+            display: block;
+        }
+
+        .status-message.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            display: block;
+        }
+
+        .media-list {
+            margin-top: 30px;
+            border-top: 2px solid #e0e0e0;
+            padding-top: 20px;
+        }
+
+        .media-list h2 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        .media-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .thumbnail {
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            background: #f5f5f5;
+        }
+
+        .thumbnail:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .thumbnail img {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+        }
+
+        .thumbnail-info {
+            padding: 8px;
+            background: white;
+            font-size: 12px;
+            color: #666;
+            text-align: center;
+        }
+
+        .audio-thumbnail {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            height: 150px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-size: 40px;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 1.5em;
+            }
+
+            .image-frame {
+                height: 300px;
+            }
+
+            .upload-btn, .save-btn, .load-btn {
+                padding: 12px 25px;
+                font-size: 14px;
+            }
+
+            .tabs {
+                flex-direction: column;
+            }
+
+            .tab-btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📷🔔 Media Storage App</h1>
+        <p class="subtitle">Upload Images & Audio for Alarms - Store in Google Sheets</p>
+        
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('images')">📷 Images</button>
+            <button class="tab-btn" onclick="switchTab('audio')">🔔 Audio Alarms</button>
+        </div>
+
+        <!-- IMAGES TAB -->
+        <div id="imagesTab" class="tab-content active">
+            <div class="upload-section">
+                <div class="file-input-wrapper">
+                    <label for="imageInput" class="upload-btn">
+                        Choose Image
+                    </label>
+                    <input type="file" id="imageInput" accept="image/*">
+                </div>
+                <button class="save-btn" id="saveImageBtn" disabled>💾 Save Image</button>
+                <button class="load-btn" id="loadImagesBtn">📥 Load Images</button>
+                <div class="file-name" id="imageFileName"></div>
+                <div class="status-message" id="imageStatus"></div>
+            </div>
+
+            <div class="image-frame" id="imageFrame">
+                <div class="placeholder">
+                    <p>📁 No image selected</p>
+                    <p style="font-size: 14px; margin-top: 10px;">Click "Choose Image" to upload</p>
+                </div>
+                <img id="displayImage" alt="Uploaded image">
+            </div>
+
+            <div class="controls">
+                <button class="control-btn" id="removeImageBtn">Remove Image</button>
+            </div>
+
+            <div class="media-list" id="imageListSection" style="display: none;">
+                <h2>Saved Images</h2>
+                <div class="media-grid" id="imageGrid"></div>
+            </div>
+        </div>
+
+        <!-- AUDIO TAB -->
+        <div id="audioTab" class="tab-content">
+            <div class="upload-section">
+                <div class="file-input-wrapper">
+                    <label for="audioInput" class="upload-btn">
+                        Choose Audio File
+                    </label>
+                    <input type="file" id="audioInput" accept="audio/*">
+                </div>
+                <button class="save-btn" id="saveAudioBtn" disabled>💾 Save Audio</button>
+                <button class="load-btn" id="loadAudioBtn">📥 Load Audio Files</button>
+                <div class="file-name" id="audioFileName"></div>
+                <div class="status-message" id="audioStatus"></div>
+            </div>
+
+            <div class="audio-frame" id="audioFrame">
+                <div class="placeholder">
+                    <p>🔔 No audio file selected</p>
+                    <p style="font-size: 14px; margin-top: 10px;">Upload an audio file to use as an alarm sound</p>
+                    <p style="font-size: 12px; margin-top: 10px; color: #999;">Supported: MP3, WAV, OGG, M4A</p>
+                </div>
+                <audio id="audioPlayer" class="audio-player" controls></audio>
+                <div class="audio-info">
+                    <h3>🎵 Audio Ready</h3>
+                    <p style="margin-top: 10px;">Use the controls above to play, or save to use as an alarm sound</p>
+                </div>
+            </div>
+
+            <div class="controls">
+                <button class="control-btn test-alarm-btn" id="testAlarmBtn" style="display: none;">🔔 Test Alarm</button>
+                <button class="control-btn" id="removeAudioBtn">Remove Audio</button>
+            </div>
+
+            <div class="media-list" id="audioListSection" style="display: none;">
+                <h2>Saved Audio Files</h2>
+                <div class="media-grid" id="audioGrid"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Current tab
+        let currentTab = 'images';
+
+        // Image elements
+        const imageInput = document.getElementById('imageInput');
+        const displayImage = document.getElementById('displayImage');
+        const imageFrame = document.getElementById('imageFrame');
+        const removeImageBtn = document.getElementById('removeImageBtn');
+        const saveImageBtn = document.getElementById('saveImageBtn');
+        const loadImagesBtn = document.getElementById('loadImagesBtn');
+        const imageFileName = document.getElementById('imageFileName');
+        const imageStatus = document.getElementById('imageStatus');
+        const imageListSection = document.getElementById('imageListSection');
+        const imageGrid = document.getElementById('imageGrid');
+
+        // Audio elements
+        const audioInput = document.getElementById('audioInput');
+        const audioPlayer = document.getElementById('audioPlayer');
+        const audioFrame = document.getElementById('audioFrame');
+        const removeAudioBtn = document.getElementById('removeAudioBtn');
+        const saveAudioBtn = document.getElementById('saveAudioBtn');
+        const loadAudioBtn = document.getElementById('loadAudioBtn');
+        const testAlarmBtn = document.getElementById('testAlarmBtn');
+        const audioFileName = document.getElementById('audioFileName');
+        const audioStatus = document.getElementById('audioStatus');
+        const audioListSection = document.getElementById('audioListSection');
+        const audioGrid = document.getElementById('audioGrid');
+
+        // Current data
+        let currentImageData = null;
+        let currentImageFileName = null;
+        let currentAudioData = null;
+        let currentAudioFileName = null;
+
+        // Replace with your Google Apps Script Web App URL
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwW8gAwcYiP3-L5Y0ugqhC66gawRrv-M-UiMQ2hnYhJvWpnNjiSISuAN6jR0pWZx2_jtQ/exec';
+
+        // Tab switching
+        function switchTab(tab) {
+            currentTab = tab;
+            const tabs = document.querySelectorAll('.tab-btn');
+            const contents = document.querySelectorAll('.tab-content');
+            
+            tabs.forEach(t => t.classList.remove('active'));
+            contents.forEach(c => c.classList.remove('active'));
+            
+            if (tab === 'images') {
+                document.querySelector('.tab-btn:first-child').classList.add('active');
+                document.getElementById('imagesTab').classList.add('active');
+            } else {
+                document.querySelector('.tab-btn:last-child').classList.add('active');
+                document.getElementById('audioTab').classList.add('active');
+            }
+        }
+
+        // IMAGE HANDLERS
+        imageInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            
+            if (file && file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                
+                reader.onload = function(event) {
+                    currentImageData = event.target.result;
+                    currentImageFileName = file.name;
+                    displayImage.src = currentImageData;
+                    imageFrame.classList.add('has-image');
+                    imageFileName.textContent = `📄 ${file.name}`;
+                    saveImageBtn.disabled = false;
+                    showStatus('imageStatus', 'Image loaded! Click "Save Image" to store it.', 'info');
+                };
+                
+                reader.readAsDataURL(file);
+            } else {
+                alert('Please select a valid image file.');
+            }
+        });
+
+        removeImageBtn.addEventListener('click', function() {
+            displayImage.src = '';
+            imageFrame.classList.remove('has-image');
+            imageInput.value = '';
+            imageFileName.textContent = '';
+            currentImageData = null;
+            currentImageFileName = null;
+            saveImageBtn.disabled = true;
+            hideStatus('imageStatus');
+        });
+
+        saveImageBtn.addEventListener('click', async function() {
+            await saveMedia('image', currentImageFileName, currentImageData, 'imageStatus', saveImageBtn);
+        });
+
+        loadImagesBtn.addEventListener('click', async function() {
+            await loadMedia('image', 'imageStatus', imageListSection, imageGrid);
+        });
+
+        // AUDIO HANDLERS
+        audioInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            
+            if (file && file.type.startsWith('audio/')) {
+                const reader = new FileReader();
+                
+                reader.onload = function(event) {
+                    currentAudioData = event.target.result;
+                    currentAudioFileName = file.name;
+                    audioPlayer.src = currentAudioData;
+                    audioFrame.classList.add('has-audio');
+                    audioFileName.textContent = `🎵 ${file.name}`;
+                    saveAudioBtn.disabled = false;
+                    testAlarmBtn.style.display = 'inline-block';
+                    showStatus('audioStatus', 'Audio loaded! Click "Save Audio" to store it.', 'info');
+                };
+                
+                reader.readAsDataURL(file);
+            } else {
+                alert('Please select a valid audio file.');
+            }
+        });
+
+        removeAudioBtn.addEventListener('click', function() {
+            audioPlayer.src = '';
+            audioFrame.classList.remove('has-audio');
+            audioInput.value = '';
+            audioFileName.textContent = '';
+            currentAudioData = null;
+            currentAudioFileName = null;
+            saveAudioBtn.disabled = true;
+            testAlarmBtn.style.display = 'none';
+            hideStatus('audioStatus');
+        });
+
+        testAlarmBtn.addEventListener('click', function() {
+            audioPlayer.currentTime = 0;
+            audioPlayer.play();
+            showStatus('audioStatus', '🔔 Playing alarm sound!', 'info');
+        });
+
+        saveAudioBtn.addEventListener('click', async function() {
+            await saveMedia('audio', currentAudioFileName, currentAudioData, 'audioStatus', saveAudioBtn);
+        });
+
+        loadAudioBtn.addEventListener('click', async function() {
+            await loadMedia('audio', 'audioStatus', audioListSection, audioGrid);
+        });
+
+        // GENERIC SAVE/LOAD FUNCTIONS
+        async function saveMedia(type, fileName, data, statusId, button) {
+            if (!data || !fileName) {
+                showStatus(statusId, 'No file to save!', 'error');
+                return;
+            }
+
+            if (SCRIPT_URL === 'YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE') {
+                showStatus(statusId, 'Please set up Google Apps Script first!', 'error');
+                return;
+            }
+
+            try {
+                button.disabled = true;
+                showStatus(statusId, `Saving ${type} to Google Sheets...`, 'info');
+
+                await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        action: 'save',
+                        type: type,
+                        fileName: fileName,
+                        data: data,
+                        timestamp: new Date().toISOString()
+                    })
+                });
+
+                showStatus(statusId, `✅ ${type.charAt(0).toUpperCase() + type.slice(1)} saved successfully!`, 'success');
+                button.disabled = false;
+            } catch (error) {
+                console.error('Error saving:', error);
+                showStatus(statusId, '❌ Error saving. Please check your setup.', 'error');
+                button.disabled = false;
+            }
+        }
+
+        async function loadMedia(type, statusId, listSection, gridElement) {
+            if (SCRIPT_URL === 'YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE') {
+                showStatus(statusId, 'Please set up Google Apps Script first!', 'error');
+                return;
+            }
+
+            try {
+                showStatus(statusId, `Loading saved ${type}s...`, 'info');
+                
+                const response = await fetch(`${SCRIPT_URL}?action=load&type=${type}`);
+                const data = await response.json();
+
+                if (data.items && data.items.length > 0) {
+                    displaySavedMedia(type, data.items, gridElement);
+                    listSection.style.display = 'block';
+                    showStatus(statusId, `✅ Loaded ${data.items.length} saved ${type}(s)!`, 'success');
+                } else {
+                    showStatus(statusId, `No saved ${type}s found.`, 'info');
+                    listSection.style.display = 'none';
+                }
+            } catch (error) {
+                console.error('Error loading:', error);
+                showStatus(statusId, '❌ Error loading. Please check your setup.', 'error');
+            }
+        }
+
+        function displaySavedMedia(type, items, gridElement) {
+            gridElement.innerHTML = '';
+
+            items.forEach((item, index) => {
+                const thumbnail = document.createElement('div');
+                thumbnail.className = 'thumbnail';
+                
+                if (type === 'image') {
+                    thumbnail.innerHTML = `
+                        <img src="${item.data}" alt="${item.fileName}">
+                        <div class="thumbnail-info">
+                            ${item.fileName}<br>
+                            <small>${new Date(item.timestamp).toLocaleDateString()}</small>
+                        </div>
+                    `;
+                    
+                    thumbnail.addEventListener('click', function() {
+                        displayImage.src = item.data;
+                        imageFrame.classList.add('has-image');
+                        imageFileName.textContent = `📄 ${item.fileName}`;
+                        currentImageData = item.data;
+                        currentImageFileName = item.fileName;
+                        showStatus('imageStatus', 'Image loaded from saved collection!', 'success');
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                    });
+                } else {
+                    thumbnail.innerHTML = `
+                        <div class="audio-thumbnail">🎵</div>
+                        <div class="thumbnail-info">
+                            ${item.fileName}<br>
+                            <small>${new Date(item.timestamp).toLocaleDateString()}</small>
+                        </div>
+                    `;
+                    
+                    thumbnail.addEventListener('click', function() {
+                        audioPlayer.src = item.data;
+                        audioFrame.classList.add('has-audio');
+                        audioFileName.textContent = `🎵 ${item.fileName}`;
+                        currentAudioData = item.data;
+                        currentAudioFileName = item.fileName;
+                        testAlarmBtn.style.display = 'inline-block';
+                        showStatus('audioStatus', 'Audio loaded from saved collection!', 'success');
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                    });
+                }
+
+                gridElement.appendChild(thumbnail);
+            });
+        }
+
+        function showStatus(elementId, message, type) {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.className = `status-message ${type}`;
+        }
+
+        function hideStatus(elementId) {
+            const element = document.getElementById(elementId);
+            element.className = 'status-message';
+        }
+    </script>
+</body>
+</html>
